@@ -1,6 +1,6 @@
 **Breast Cancer Detection using AI**
 
-A specialized AI system for breast cancer, utilizing tabular data with 98.25% test accuracy, providing AI-powered analysis and foundational Explainable AI (XAI) insights.
+A specialized AI system for breast cancer, utilizing **tabular data** with **98.25% test accuracy**, providing AI-powered analysis and foundational Explainable AI (XAI) insights.
 
 **The AI Brain**
 At the heart of this application is a custom-built deep learning model. Think of it as a highly specialized brain that has been trained for one specific task: to distinguish between benign and malignant cells based on their measurements. This was achieved through a process called Supervised Learning.
