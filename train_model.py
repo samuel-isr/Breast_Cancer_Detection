@@ -8,7 +8,6 @@ from tensorflow.keras.layers import Dense, Dropout
 import matplotlib.pyplot as plt
 import os
 import joblib
-
 file_path = 'wdbc.data'
 if not os.path.exists(file_path):
     print(f"Error: {file_path}")
