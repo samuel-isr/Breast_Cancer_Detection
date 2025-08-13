@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Diagnosis | Breast Cancer Predictor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #111827; }
+        .glass-card { background: rgba(31, 41, 55, 0.5); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .form-input { background-color: #374151; border: 1px solid #4B5563; color: #F3F4F6; transition: all 0.2s ease-in-out; }
+        .form-input:focus { outline: none; border-color: #3B82F6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); }
+        .btn-predict { background: linear-gradient(to right, #3B82F6, #6366F1); transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
+        .btn-predict:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); }
+        .result-card-content { transition: opacity 0.3s ease-in-out; }
+        .loader { border-top-color: #3B82F6; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .hidden { display: none; }
+        .sidebar-link { transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out; }
+        .sidebar-link.active { background-color: #3B82F6; color: white; }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1F2937; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4B5563; 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6B7280; 
+        }
+    </style>
+</head>
+<body class="text-gray-200">
+
+    <div class="flex min-h-screen">
+        <nav class="w-64 bg-gray-900/70 backdrop-filter backdrop-blur-lg border-r border-gray-700 p-4 flex-shrink-0">
+            <h1 class="text-2xl font-bold text-white mb-8">AI Diagnosis</h1>
+            <ul>
+                <li>
+                    <a href="#" id="nav-predictor" class="sidebar-link active flex items-center p-3 rounded-lg font-semibold">
+                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 0l3 3m-3-3v10m-6 4h6m-6-4H7a2 2 0 01-2-2V7a2 2 0 012-2h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293h3.172a2 2 0 012 2v10a2 2 0 01-2 2h-2.586a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 009.414 17H7a2 2 0 01-2-2z"></path></svg>
+                        Predictor
+                    </a>
+                </li>
+                <li class="mt-2">
+                    <a href="#" id="nav-info" class="sidebar-link flex items-center p-3 rounded-lg font-semibold text-gray-400 hover:bg-gray-800 hover:text-white">
+                         <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v1.586m0 7.161v1.586m-3.328-5.328l-1.122-1.122m7.898 2.244l-1.122-1.122M4.878 10.5l-1.122-1.122m7.898 2.244l-1.122-1.122M12 21a9 9 0 100-18 9 9 0 000 18z"></path></svg>
+                        Info
+                    </a>
+                </li>
+                <li class="mt-2">
+                    <a href="#" id="nav-about" class="sidebar-link flex items-center p-3 rounded-lg font-semibold text-gray-400 hover:bg-gray-800 hover:text-white">
+                         <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        About
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <main class="flex-1 p-4 sm:p-6 lg:p-8 lg:max-h-screen lg:overflow-y-auto">
+            <div id="page-predictor">
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <div class="w-full lg:w-2/3">
+                        <div class="sticky top-0 bg-gray-900/80 backdrop-filter backdrop-blur-sm py-4 z-10">
+                            <h1 class="text-3xl sm:text-4xl font-bold text-white">Breast Cancer Diagnosis Predictor</h1>
+                            <p class="mt-2 text-gray-400">This tool leverages an AI model to predict diagnosis based on cellular characteristics.</p>
+                        </div>
+                        <form id="prediction-form" class="mt-6 space-y-6">
+                        </form>
+                    </div>
+                    <div class="w-full lg:w-1/3 flex flex-col items-center lg:justify-center">
+                        <div class="w-full max-w-md sticky top-8">
+                            <div class="flex items-center justify-between mb-4">
+                                 <button type="submit" form="prediction-form" class="w-full btn-predict text-white font-bold py-3 px-4 rounded-lg text-lg">
+                                    Run Prediction
+                                </button>
+                                <button type="button" id="fill-dummy-data" class="ml-4 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition">
+                                    Test Data
+                                </button>
+                            </div>
+                            <div id="result-card" class="w-full h-64 rounded-xl glass-card flex items-center justify-center p-6">
+                                <div id="initial-state" class="result-card-content text-center">
+                                    <svg class="w-16 h-16 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                                    <h2 class="text-xl font-semibold text-white">Awaiting Input</h2>
+                                    <p class="text-gray-400 mt-2">Enter the feature values and click "Run Prediction" to see the diagnosis.</p>
+                                </div>
+                                <div id="loader-container" class="result-card-content text-center hidden"><div class="loader w-12 h-12 rounded-full border-4 border-gray-600 mx-auto"></div><p class="mt-4 text-lg font-semibold">Analyzing...</p></div>
+                                <div id="result-content" class="result-card-content w-full h-full flex flex-col items-center justify-center text-center rounded-xl hidden"><div id="result-icon-container"></div><h2 id="result-prediction" class="text-3xl font-bold mt-2"></h2><p class="mt-2 font-medium">Confidence Score</p><p id="result-score" class="text-4xl font-bold text-white"></p></div>
+                            </div>
+                            <div id="error-message" class="mt-4 text-red-400 text-center"></div>
+                            <div id="xai-container" class="mt-8 p-6 glass-card rounded-lg hidden">
+                                <h2 class="text-2xl font-bold text-white mb-4">Visual Depiction</h2>
+                                <canvas id="xaiChart"></canvas>
+                                <div class="mt-4">
+                                    <h3 class="text-lg font-semibold text-white">Reasoning for Prediction</h3>
+                                    <p class="text-sm text-gray-400 mt-2">
+                                        This chart is the AI's way of showing you its thought process. It highlights the key pieces of evidence that influenced the final diagnosis. Think of it as a balance of factors.
+                                        <br><br>
+                                        Sometimes, even in a clear "Benign" result, one or two features (shown in red) might have characteristics that, on their own, lean towards "Malignant." However, the final prediction is made because the combined evidence from the green features was much stronger, tipping the scales in favor of a benign diagnosis.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="page-info" class="hidden">
+                <div class="max-w-4xl mx-auto">
+                   <h1 class="text-4xl font-bold text-white">Understanding the Features</h1>
+                   <p class="mt-4 text-gray-400">The AI model makes its predictions based on 30 different measurements taken from a cell sample. Here's a simple breakdown of what these feature categories mean.</p>
+                   
+                   <div class="mt-8 p-6 glass-card rounded-lg space-y-6">
+                       <div>
+                           <h2 class="text-2xl font-bold text-white">Mean Measurements</h2>
+                           <p class="mt-2 text-gray-300">This group of features represents the average value for different characteristics across all the cells in the sample. It gives a general overview of the cells.</p>
+                           <ul class="list-disc list-inside mt-4 space-y-2 text-gray-400">
+                               <li><strong>Radius Mean:</strong> The average distance from the center to the edge of the cell nuclei.</li>
+                               <li><strong>Texture Mean:</strong> The average variation in the gray-scale intensity, which measures how uniform the cell's texture is.</li>
+                               <li><strong>Perimeter Mean:</strong> The average length of the boundary of the cell nuclei.</li>
+                               <li><strong>Area Mean:</strong> The average area of the cell nuclei.</li>
+                               <li><strong>Smoothness Mean:</strong> The average smoothness of the nucleus shape.</li>
+                               <li><strong>Compactness Mean:</strong> A measure of how compact the nucleus shape is (perimeter^2 / area - 1.0).</li>
+                               <li><strong>Concavity Mean:</strong> The average severity of concave portions (indentations) in the nucleus's boundary.</li>
+                               <li><strong>Concave Points Mean:</strong> The average number of concave portions in the nucleus's boundary.</li>
+                               <li><strong>Symmetry Mean:</strong> The average symmetry of the nucleus shape.</li>
+                               <li><strong>Fractal Dimension Mean:</strong> A measure of the "coastline" complexity of the nucleus boundary.</li>
+                           </ul>
+                       </div>
+                       <div>
+                           <h2 class="text-2xl font-bold text-white">Standard Error Measurements</h2>
+                           <p class="mt-2 text-gray-300">This group of features tells us about the amount of variation or inconsistency within the cell sample for each characteristic. A smaller number means the cells are more uniform.</p>
+                           <ul class="list-disc list-inside mt-4 space-y-2 text-gray-400">
+                               <li><strong>Radius SE, Perimeter SE, Area SE:</strong> The average amount of error or variability in the measurement of the nucleus size.</li>
+                               <li><strong>Texture SE:</strong> The average variability in the cell's surface texture.</li>
+                               <li><strong>Smoothness SE, Compactness SE, Concavity SE:</strong> The average variability in the shape and contour of the cell nuclei.</li>
+                               <li><strong>Concave Points SE, Symmetry SE:</strong> The average variability in the number of indentations and the overall symmetry.</li>
+                               <li><strong>Fractal Dimension SE:</strong> The average variability in the complexity of the nucleus boundary.</li>
+                           </ul>
+                       </div>
+                       <div>
+                           <h2 class="text-2xl font-bold text-white">Worst (Largest) Measurements</h2>
+                           <p class="mt-2 text-gray-300">This group of features focuses on the most abnormal-looking cells by averaging the three largest or most irregular examples in the sample. This is often a key indicator, as it highlights the most suspicious cells.</p>
+                            <ul class="list-disc list-inside mt-4 space-y-2 text-gray-400">
+                               <li><strong>Radius Worst, Perimeter Worst, Area Worst:</strong> The average size of the three largest cell nuclei.</li>
+                               <li><strong>Texture Worst:</strong> The average texture of the three most varied cell nuclei.</li>
+                               <li><strong>Smoothness Worst, Compactness Worst, Concavity Worst:</strong> The average shape characteristics of the three most irregular cell nuclei.</li>
+                               <li><strong>Concave Points Worst, Symmetry Worst:</strong> The average indentation and symmetry characteristics of the three most irregular nuclei.</li>
+                               <li><strong>Fractal Dimension Worst:</strong> The average boundary complexity of the three most irregular nuclei.</li>
+                           </ul>
+                       </div>
+                   </div>
+                </div>
+            </div>
+            <div id="page-about" class="hidden">
+                 <div class="max-w-4xl mx-auto">
+                    <h1 class="text-4xl font-bold text-white">About This Project</h1>
+                    <div class="mt-8 p-6 glass-card rounded-lg space-y-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">Creator</h2>
+                            <p class="mt-2 text-lg text-gray-300">Created and developed by Samuel I.</p>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">The AI Brain</h2>
+                            <p class="mt-2 text-gray-300">At the heart of this application is a custom-built deep learning model. Think of it as a highly specialized brain that has been trained for one specific task: to distinguish between benign and malignant cells based on their measurements. This was achieved through a process called Supervised Learning.</p>
+                            <ul class="list-disc list-inside mt-4 space-y-2 text-gray-400">
+                                <li><strong>Learning from Examples:</strong> The model was trained on the Breast Cancer Wisconsin (Diagnostic) dataset, which contains hundreds of examples, each already labeled by medical experts. By studying these examples, the model learned to identify the subtle patterns and combinations of features that are characteristic of each diagnosis.</li>
+                                <li><strong>The Neural Network:</strong> The model's architecture is a Neural Network, inspired by the structure of the human brain. It's composed of layers of interconnected nodes, or "neurons." The input layer receives the 30 feature measurements. This information then travels through several hidden layers, where complex relationships between the features are analyzed. Finally, the output layer produces a single probability—the model's confidence that the sample is malignant.</li>
+                                <li><strong>Achieving High Accuracy:</strong> The model was built using the popular TensorFlow and Keras libraries. During its training, it continuously refined its predictions, aiming to minimize errors. This iterative process allowed it to achieve a very high accuracy (over 98%) on data it had never seen before, making it a powerful tool for this diagnostic task.</li>
+                            </ul>
+                        </div>
+                        <div>
+                             <h2 class="text-2xl font-bold text-white">Explainable AI (XAI) in Action</h2>
+                             <p class="mt-2 text-gray-300">A major focus of this project is moving beyond a "black box" prediction. This application implements Explainable AI (XAI) to provide insight into the model's reasoning. We use the SHAP (SHapley Additive exPlanations) technique, a leading method for explaining the output of any machine learning model.</p>
+                             <p class="mt-2 text-gray-300">When you make a prediction, the SHAP algorithm analyzes how much each individual feature (like 'concave points_worst' or 'texture_mean') contributed to the final decision. The feature importance chart visualizes this, showing you the top factors that pushed the model's prediction one way or the other. This transparency is crucial for building trust and understanding in AI-driven diagnostic tools.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let xaiChartInstance = null;
+            const form = document.getElementById('prediction-form');
+            const errorMessage = document.getElementById('error-message');
+            const dummyDataBtn = document.getElementById('fill-dummy-data');
+            const initialState = document.getElementById('initial-state');
+            const loaderContainer = document.getElementById('loader-container');
+            const resultContent = document.getElementById('result-content');
+            const resultIconContainer = document.getElementById('result-icon-container');
+            const resultPrediction = document.getElementById('result-prediction');
+            const resultScore = document.getElementById('result-score');
+            const navPredictor = document.getElementById('nav-predictor');
+            const navAbout = document.getElementById('nav-about');
+            const navInfo = document.getElementById('nav-info');
+            const pagePredictor = document.getElementById('page-predictor');
+            const pageAbout = document.getElementById('page-about');
+            const pageInfo = document.getElementById('page-info');
+            const xaiContainer = document.getElementById('xai-container');
+            const xaiChartCanvas = document.getElementById('xaiChart').getContext('2d');
+
+            const feature_names = [ 'radius_mean', 'texture_mean', 'perimeter_mean', 'area_mean', 'smoothness_mean', 'compactness_mean', 'concavity_mean', 'concave_points_mean', 'symmetry_mean', 'fractal_dimension_mean', 'radius_se', 'texture_se', 'perimeter_se', 'area_se', 'smoothness_se', 'compactness_se', 'concavity_se', 'concave_points_se', 'symmetry_se', 'fractal_dimension_se', 'radius_worst', 'texture_worst', 'perimeter_worst', 'area_worst', 'smoothness_worst', 'compactness_worst', 'concavity_worst', 'concave_points_worst', 'symmetry_worst', 'fractal_dimension_worst' ];
+            const test_cases = [ { name: "Ambiguous Case 1", data: [13.17, 21.81, 85.42, 531.5, 0.09714, 0.1047, 0.08259, 0.05252, 0.1746, 0.06177, 0.4043, 1.48, 2.63, 35.5, 0.0068, 0.023, 0.029, 0.012, 0.018, 0.003, 16.23, 29.89, 105.5, 840.7, 0.15, 0.39, 0.37, 0.16, 0.34, 0.09] }, { name: "Ambiguous Case 2", data: [14.42, 19.77, 94.48, 642.5, 0.09752, 0.1141, 0.09388, 0.05839, 0.1879, 0.0639, 0.2895, 1.851, 2.376, 26.85, 0.008005, 0.0289, 0.03321, 0.01424, 0.01465, 0.004447, 16.33, 30.86, 109.5, 826.4, 0.1431, 0.3026, 0.3194, 0.1565, 0.2718, 0.09353] }, { name: "Ambiguous Case 3", data: [13.8, 15.7, 88.6, 595.0, 0.09, 0.05, 0.03, 0.02, 0.16, 0.05, 0.2, 0.7, 1.4, 16.0, 0.005, 0.008, 0.009, 0.006, 0.01, 0.001, 15.0, 17.0, 95.0, 680.0, 0.12, 0.1, 0.08, 0.06, 0.22, 0.06] }, { name: "Ambiguous Case 4", data: [14.2, 16.8, 91.3, 640.0, 0.09, 0.08, 0.05, 0.02, 0.18, 0.06, 0.3, 1.0, 2.2, 25.0, 0.007, 0.02, 0.02, 0.01, 0.02, 0.003, 16.4, 25.4, 107.0, 830.0, 0.12, 0.25, 0.2, 0.08, 0.28, 0.08] }, { name: "Ambiguous Case 5", data: [12.8, 16.0, 82.0, 510.0, 0.09, 0.05, 0.03, 0.02, 0.17, 0.06, 0.2, 0.8, 1.5, 18.0, 0.006, 0.01, 0.01, 0.007, 0.01, 0.002, 13.5, 20.0, 88.0, 570.0, 0.12, 0.1, 0.08, 0.05, 0.24, 0.07] }, { name: "Ambiguous Case 6", data: [15.1, 22.0, 97.0, 700.0, 0.1, 0.13, 0.12, 0.08, 0.2, 0.06, 0.7, 1.0, 4.7, 80.0, 0.005, 0.02, 0.03, 0.015, 0.02, 0.004, 17.0, 28.0, 112.0, 900.0, 0.14, 0.35, 0.4, 0.18, 0.3, 0.09] } ];
+            const featureGroups = { "Mean Measurements": feature_names.slice(0, 10), "Standard Error Measurements": feature_names.slice(10, 20), "Worst (Largest) Measurements": feature_names.slice(20, 30) };
+            for (const groupName in featureGroups) { let groupHtml = `<details class="glass-card rounded-lg p-4" open><summary class="text-lg font-semibold text-white cursor-pointer">${groupName}</summary><div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">`; featureGroups[groupName].forEach(feature => { groupHtml += `<div><label for="${feature}" class="block text-sm font-medium text-gray-300">${feature.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</label><input type="number" step="any" name="${feature}" id="${feature}" class="form-input mt-1 block w-full rounded-md shadow-sm" required></div>`; }); groupHtml += `</div></details>`; form.innerHTML += groupHtml; }
+            function navigate(activePage, activeLink) {
+                [pagePredictor, pageInfo, pageAbout].forEach(page => page.classList.add('hidden'));
+                [navPredictor, navInfo, navAbout].forEach(link => {
+                    link.classList.remove('active');
+                    link.classList.add('text-gray-400', 'hover:bg-gray-800', 'hover:text-white');
+                });
+                activePage.classList.remove('hidden');
+                activeLink.classList.add('active');
+                activeLink.classList.remove('text-gray-400', 'hover:bg-gray-800', 'hover:text-white');
+            }
+
+            navPredictor.addEventListener('click', (e) => { e.preventDefault(); navigate(pagePredictor, navPredictor); });
+            navInfo.addEventListener('click', (e) => { e.preventDefault(); navigate(pageInfo, navInfo); });
+            navAbout.addEventListener('click', (e) => { e.preventDefault(); navigate(pageAbout, navAbout); });
+            form.addEventListener('submit', async function(e) { e.preventDefault(); errorMessage.textContent = ''; showLoader(); const formData = new FormData(form); const features = feature_names.map(name => parseFloat(formData.get(name))); if (features.some(isNaN)) { showError("Please fill out all fields with valid numbers."); return; } try { const response = await fetch('http://127.0.0.1:5000/predict', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ features: features }) }); if (!response.ok) { const errData = await response.json(); throw new Error(errData.error || `API Error: ${response.status}`); } const result = await response.json(); displayResult(result); } catch (error) { showError(error.message); } });
+            dummyDataBtn.addEventListener('click', () => { const randomIndex = Math.floor(Math.random() * test_cases.length); const randomCase = test_cases[randomIndex]; feature_names.forEach((name, index) => { document.getElementById(name).value = randomCase.data[index]; }); });
+            function showLoader() { initialState.classList.add('hidden'); resultContent.classList.add('hidden'); loaderContainer.classList.remove('hidden'); xaiContainer.classList.add('hidden'); }
+            function displayResult(result) {
+                const { prediction, confidence_score, feature_importance } = result;
+                const isMalignant = prediction === 'Malignant';
+                
+                const bgColor = isMalignant ? 'bg-red-500/30' : 'bg-green-500/30';
+                const textColor = isMalignant ? 'text-red-300' : 'text-green-300';
+                const icon = isMalignant ? `<svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>` : `<svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+                const confidence = isMalignant ? confidence_score : 1 - confidence_score;
+                
+                resultContent.classList.remove('bg-red-500/30', 'text-red-300', 'bg-green-500/30', 'text-green-300');
+                resultContent.classList.add(bgColor, textColor);
+                resultIconContainer.innerHTML = icon;
+                resultPrediction.textContent = prediction;
+                resultScore.textContent = `${(confidence * 100).toFixed(2)}%`;
+
+                loaderContainer.classList.add('hidden');
+                resultContent.classList.remove('hidden');
+                displayXaiChart(feature_importance);
+            }          
+            function displayXaiChart(importance_data) {
+                const sorted_features = Object.entries(importance_data).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, 10);               
+                const labels = sorted_features.map(item => item[0].replace(/_/g, ' '));
+                const values = sorted_features.map(item => item[1]);
+                const colors = values.map(v => v > 0 ? 'rgba(239, 68, 68, 0.6)' : 'rgba(34, 197, 94, 0.6)');
+                if (xaiChartInstance) {
+                    xaiChartInstance.destroy();
+                }
+                xaiChartInstance = new Chart(xaiChartCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Feature Influence',
+                            data: values,
+                            backgroundColor: colors,
+                            borderColor: colors.map(c => c.replace('0.6', '1')),
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        scales: {
+                            x: {
+                                ticks: { color: '#9CA3AF' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            },
+                            y: {
+                                ticks: { color: '#D1D5DB' },
+                                grid: { display: false }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) { label += ': '; }
+                                        if (context.parsed.x !== null) {
+                                            const direction = context.parsed.x > 0 ? '-> Malignant' : '-> Benign';
+                                            label += `${Math.abs(context.parsed.x).toFixed(4)} (${direction})`;
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                xaiContainer.classList.remove('hidden');
+            }
+
+            function showError(message) { errorMessage.textContent = message; loaderContainer.classList.add('hidden'); resultContent.classList.add('hidden'); initialState.classList.remove('hidden'); xaiContainer.classList.add('hidden'); }
+        });
+    </script>
+</body>
+</html>
