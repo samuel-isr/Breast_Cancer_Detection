@@ -21,3 +21,37 @@ A major focus of this project is moving beyond a "black box" prediction.
 This application implements Explainable AI (XAI) to provide insight into the model's reasoning. We use the SHAP (SHapley Additive exPlanations) technique, a leading method for explaining the output of any machine learning model.
 
 When you make a prediction, the SHAP algorithm analyzes how much each individual feature (like 'concave points_worst' or 'texture_mean') contributed to the final decision. The feature importance chart visualizes this, showing you the top factors that pushed the model's prediction one way or the other. This transparency is crucial for building trust and understanding in AI-driven diagnostic tools.
+
+
+ Usage Setup and Installation
+To run this project locally, please follow these steps:
+1. Clone the Repository
+git clone
+cd your-repo-name
+
+2. Create and Activate a Virtual Environment It's highly recommended to use a virtual environment to keep project dependencies isolated.
+Create the virtual environment:
+python -m venv venv
+
+Activate it (Windows):
+.\venv\Scripts\activate
+
+Activate it (macOS/Linux):
+source venv/bin/activate
+
+3. Install Dependencies Install all the necessary Python packages using the requirements.txt file.
+pip install -r requirements.txt
+
+The application consists of two parts that need to be run simultaneously: the backend server and the frontend interface.
+
+1. Start the Backend Server Open a terminal, activate your virtual environment, and run the Flask app:
+   
+python app.py
+
+You should see output indicating that the server is running on http:// (example).
+Keep this terminal running.
+
+2. Launch the Frontend Open the index.html file in your web browser.
+The easiest way to do this with live reloading is by using the Live Server extension in VS Code (right-click index.html -> "Open with Live Server").
+
+You can now interact with the application in your browser.
