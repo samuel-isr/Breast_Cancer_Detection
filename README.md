@@ -23,7 +23,8 @@ This application implements Explainable AI (XAI) to provide insight into the mod
 When you make a prediction, the SHAP algorithm analyzes how much each individual feature (like 'concave points_worst' or 'texture_mean') contributed to the final decision. The feature importance chart visualizes this, showing you the top factors that pushed the model's prediction one way or the other. This transparency is crucial for building trust and understanding in AI-driven diagnostic tools.
 
 
- Usage Setup and Installation
+ # Usage Setup and Installation
+ 
 To run this project locally, please follow these steps:
 1. Clone the Repository
 git clone
