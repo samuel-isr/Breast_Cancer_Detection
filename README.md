@@ -9,7 +9,7 @@ At the heart of this application is a custom-built deep learning model. Think of
 The model was trained on the Breast Cancer Wisconsin (Diagnostic) dataset, which contains hundreds of examples, each already labeled by medical experts. By studying these examples, the model learned to identify the subtle patterns and combinations of features that are characteristic of each diagnosis.
 
 # The Neural Network:
-The model's architecture is a Neural Network, inspired by the structure of the human brain. It's composed of layers of interconnected nodes, or "neurons." The input layer receives the 30 feature measurements. This information then travels through several hidden layers, where complex relationships between the features are analyzed. Finally, the output layer produces a single probability—the model's confidence that the sample is malignant.
+The model's architecture is a Neural Network, inspired by the structure of the human brain. It's composed of layers of interconnected nodes, or "neurons." The input layer receives the 30 feature measurements. This information then travels through several hidden layers, where complex relationships between the features are analyzed. Finally, the output layer produces a single probability, the model's confidence that the sample is malignant.
 
 *Achieving High Accuracy:* 
 The model was built using the popular TensorFlow and Keras libraries. During its training, it continuously refined its predictions, aiming to minimize errors. This iterative process allowed it to achieve a very high accuracy (over 98%) on data it had never seen before, making it a powerful tool for this diagnostic task.
